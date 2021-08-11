@@ -1,14 +1,28 @@
-//import 'dart:js';
-
-//import 'package:clinica/registrarpaciente.dart';
+import 'package:get/get.dart';
 import 'package:flutter/material.dart';
 
-class LoginPage extends StatelessWidget {
+import '../models/person.dart';
+import '../services/auth.dart';
+
+import '../globals.dart' show Routes;
+
+class LoginPage extends StatefulWidget {
+  @override
+  _LoginPageState createState() => _LoginPageState();
+}
+
+class _LoginPageState extends State<LoginPage> {
+  final _formKey = GlobalKey<FormState>();
+
+  Persona persona = Persona(usuario: Usuario());
+
   Widget renderEmailInput() {
     return Padding(
       padding: const EdgeInsets.only(top: 40),
       child: TextFormField(
         decoration: InputDecoration(hintText: 'Usuario o Correo Electronico'),
+        onChanged: (email) => persona.usuario!.correoElectronico = email,
+        validator: (email) => email!.isEmpty ? 'Correo Requerido' : null,
       ),
     );
   }
@@ -19,6 +33,8 @@ class LoginPage extends StatelessWidget {
       child: TextFormField(
         decoration: InputDecoration(hintText: 'Contraseña'),
         obscureText: true,
+        onChanged: (pwd) => persona.usuario!.password = pwd,
+        validator: (pwd) => pwd!.isEmpty ? 'Contraseña Requerida' : null,
       ),
     );
   }
@@ -29,8 +45,14 @@ class LoginPage extends StatelessWidget {
       child: RaisedButton(
         child: Text('Entrar'),
         textColor: Colors.white,
-        onPressed: () {},
         color: Colors.deepPurpleAccent.shade400,
+        onPressed: () async {
+          // if (!_formKey.currentState!.validate()) {
+            print(this.persona.usuario!.toRawJson());
+            await Auth.instance.signIn(this.persona.usuario);
+            Get.toNamed(Routes.home);
+          // }
+        },
       ),
     );
   }
@@ -68,25 +90,25 @@ class LoginPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-          title: const Text('Login'),
-          backgroundColor: Colors.deepPurpleAccent.shade400),
+      appBar: AppBar(title: const Text('Login'), backgroundColor: Colors.deepPurpleAccent.shade400),
       body: Container(
-          padding: EdgeInsets.symmetric(horizontal: 16),
-          decoration: BoxDecoration(color: Colors.white),
-          child: ListView(children: [
-            Image.asset(
-              'assets/image/imagen1.jpg',
-              /*width: 540.0,
-        height: 240.0,*/
-            ),
-            renderEmailInput(),
-            renderPasswordInput(),
-            renderLoginButton(),
-            //renderCreateAccountLink(),
-            renderDivisor(),
-            renderLoginRegister(context)
-          ])),
+        padding: EdgeInsets.symmetric(horizontal: 16),
+        decoration: BoxDecoration(color: Colors.white),
+        child: Form(
+          key: _formKey,
+          child: ListView(
+            children: [
+              Image.asset('assets/imagen1.jpg'),
+              renderEmailInput(),
+              renderPasswordInput(),
+              renderLoginButton(),
+              //renderCreateAccountLink(),
+              renderDivisor(),
+              renderLoginRegister(context)
+            ],
+          ),
+        ),
+      ),
     );
   }
 }
